@@ -1,516 +1,398 @@
-openapi: 3.0.3
+openapi: 3.0.1
 info:
-  title: Car Rental Service 3.0
-  description: |-
-    Cервіс для прокату авто. Користувачі сервісу можуть бути двох рівнів – адміністратори та пасажири. Адміністратори можуть додавати та видаляти авто із системи, редагувати інформацію про авто. Пасажири можуть переглядати каталог та бронювати авто на певний час.
-  version: 1.0.11
+  title: Car rental
+  description: Варіант 14. Створити сервіс для прокату авто. Користувачі сервісу можуть бути двох рівнів – адміністратори та пасажири. Адміністратори можуть додавати та видаляти авто із системи, редагувати інформацію про авто. Пасажири можуть переглядати каталог та бронювати авто на певний час.
+  version: 1.0.0
 servers:
-  - url: https://localhost:8080/api/v3
+  - url: 'https://сar_rental.swagger.io/api/v2'
+  - url: 'http://сar_rental.swagger.io/api/v2'
+
+tags:
+- name: user
+  description: Operations with users
+- name: car
+  description: Operations with car
+- name: booking
+  description: Car booking
+
 paths:
-  /cars:
-    get:
-      summary: Method for obtaining a list of all cars
-      tags:
-        - cars
-      operationId: getAllCars
-      responses:
-        '200':
-          description: The request was completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cars'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+  /user:
     post:
-      summary: The method of creating a new car
       tags:
-        - cars
-        - car
-      operationId: createCar
+        - user
+      description: Operations with users
+      summary: Operations with users
+      operationId: createuser
       requestBody:
-        required: true
-        content:
-          aplication/json:
-            schema:
-              $ref: '#/components/schemas/Car'
-      responses:
-        '200':
-          description: The request was completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /cars/{carId}:
-    get:
-      summary: Method for obtaining a car by Id
-      tags:
-        - cars
-        - car
-      operationId: getCarById
-      parameters:
-        - name: carId
-          in: path
-          required: true
-          description: Car Id
-          schema:
-            type: string
-            example: 10
-      responses:
-        '200':
-          description: The request was completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    delete:
-      summary: The method of removing a car by Id
-      tags:
-        - cars
-        - car
-      operationId: deleteCarById
-      parameters:
-        - name: carId
-          in: path
-          required: true
-          description: Car Id
-          schema:
-            type: string
-            example: 10
-      responses:
-        '200':
-          description: The request was completed successfully
-          content:
-            application/json: {}
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    put:
-      summary: Method of editing car data by Id
-      tags:
-        - cars
-        - car
-      operationId: updateCarById
-      parameters:
-        - name: carId
-          in: path
-          required: true
-          description: Car Id
-          schema:
-            type: integer
-      requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Car'
+              $ref: '#/components/schemas/create_user'
       responses:
         '200':
-          description: Update Succesfully
-          content:
-            application/json:
-              schema:
-                  items:
-                    $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-#######################################################################################
-  /admin/cars:
+          description: The user is created !
+          content: {}
+        '400':
+          description: Error!
+        '404':
+          description: Missing values !
+          content: {}
+      security:
+      - car_auth:
+        - write:passenger
+        - read:passenger
+      - api_key: [ ]
+  /user/login:
     get:
-      summary: Method for obtaining a list of all cars
       tags:
-        - administrator
-      operationId: getAllCarsAdmin
+        - user
+      summary: Logs user into the system
+      operationId: loginUser
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: The request was completed successfully
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Cars'
-        'default':
-          description: Request error
-          content:
-            application/json:
+                type: string
+            application/xml:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: string
+        '400':
+          description: Invalid username/password supplied
+  '/user/{id_user}':
+    get:
+      tags:
+        - user
+      summary: Get user data
+      operationId: getdata
+      parameters:
+        - name: id_user
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content: {}
+        '404':
+          description: The user was not found
+          content: {}
+
+      security:
+      - car_auth:
+        - read:passenger
+      - api_key: [ ]
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      operationId: deleteuser
+      parameters:
+        - name: id_user
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User was deleted !
+          content: {}
+        '404':
+          description: The user was not found
+          content: {}
+      security:
+        - car_auth:
+          - write:administrator
+          - read:administrator
+        - api_key: [ ]
+  /car:
     post:
-      summary: The method of creating a new car
       tags:
-        - administrator
-      operationId: createCarAdmin
+        - car
+      summary: Add a new car
+      operationId: addcar
       requestBody:
-        required: true
         content:
-          aplication/json:
+          application/json:
             schema:
-              $ref: '#/components/schemas/Car'
+              $ref: '#/components/schemas/create_car'
       responses:
+        '400':
+          description: Error
+          content: {}
         '200':
-          description: The request was completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /admin/cars/{carId}:
+          description: The car is created !
+          content: {}
+        '404':
+          description: Missing values !
+          content: {}
+      security:
+      - car_auth:
+        - write:administrator
+        - read:administrator
+      - api_key: [ ]
     get:
-      summary: Method for obtaining a car by Id
       tags:
-        - administrator
-      operationId: getCarByIdAdmin
+        - car
+      summary: Get all the cars
+      operationId: getcars
+      responses:
+        '404':
+          description: The car was not found
+          content: {}
+        '200':
+          description: ''
+          content: {}
+      security:
+      - car_auth:
+        - write:passenger
+        - read:passenger
+      - api_key: [ ]
+  '/car/{id_car}':
+    get:
+      tags:
+        - car
+      summary: Get the car with such id
+      operationId: getcarid
       parameters:
-        - name: carId
+        - name: id_car
           in: path
           required: true
-          description: Car Id
           schema:
             type: string
-            example: 10
       responses:
         '200':
-          description: The request was completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: ''
+          content: {}
+      security:
+      - car_auth:
+        - write:administrator
+        - read:administrator
+      - api_key: [ ]
+    put:
+      tags:
+        - car
+      summary: Update the car with such id
+      operationId: Updatecar
+      parameters:
+        - name: id_car
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Car was updated !
+          content: {}
+        '403':
+          description: You do not have access!
+          content: {}
+        '404':
+          description: Missing values !
+          content: {}
+
+      security:
+      - car_auth:
+        - write:administrator
+        - read:administrator
+      - api_key: [ ]
     delete:
-      summary: The method of removing a car by Id
       tags:
-        - administrator
-      operationId: deleteCarByIdAdmin
+        - car
+      summary: Delete the car with such id
+      operationId: deletecar
       parameters:
-        - name: carId
+        - name: id_car
           in: path
           required: true
-          description: Car Id
           schema:
             type: string
-            example: 10
       responses:
         '200':
-          description: The request was completed successfully
-          content:
-            application/json: {}
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    put:
-      summary: Method of editing car data by Id
+          description: Car was deleted !
+          content: {}
+        '403':
+          description: You do not have access !
+          content: {}
+        '404':
+          description: The car was not found !
+          content: {}
+      security:
+        - car_auth:
+          - write:administrator
+          - read:administrator
+        - api_key: [ ]
+  /booking:
+    post:
       tags:
-        - administrator
-      operationId: updateCarByIdAdmin
-      parameters:
-        - name: carId
-          in: path
-          required: true
-          description: Car Id
-          schema:
-            type: integer
+        - booking
+      summary: Create a new booking
+      operationId: creatbooking
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Car'
-      responses:
-        '200':
-          description: Update Succesfully
-          content:
-            application/json:
-              schema:
-                  items:
-                    $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /passenger/cars:
-    get:
-      summary: Method for obtaining a list of all cars
-      tags:
-        - passenger
-      operationId: getAllCarsUser
-      responses:
-        '200':
-          description: The request was completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cars'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /passenger/cars/{carId}:
-    get:
-      summary: Method for obtaining a car by Id
-      tags:
-        - passenger
-      operationId: getCarByIdUser
-      parameters:
-        - name: carId
-          in: path
-          required: true
-          description: Car Id
-          schema:
-            type: string
-            example: 10
-      responses:
-        '200':
-          description: The request was completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /passenger/reserv/cars/{carId}:
-    put:
-      summary: Method for booking a car by Id
-      tags:
-        - passenger
-      operationId: reservationCarByIdUser
-      parameters:
-        - name: carId
-          in: path
-          required: true
-          description: Car Id
-          schema:
-            type: integer
-      requestBody:
+              $ref: '#/components/schemas/create_booking'
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Reservation'
       responses:
         '200':
-          description: Update Succesfully
+          description: The booking is created !
+          content: {}
+        '400':
+          description: ERROR
+          content: {}
+
+      security:
+      - car_auth:
+        - write:passenger
+        - read:passenger
+      - api_key: [ ]
+    get:
+      tags:
+        - booking
+      summary: Get everything that is not booked
+      responses:
+        '200':
+          description: ''
           content:
             application/json:
               schema:
-                  items:
-                    $ref: '#/components/schemas/Car'
-        'default':
-          description: Request error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                type: array
+                items:
+                  $ref: '#/components/schemas/booking'
+                nullable: false
+
+      security:
+      - car_auth:
+        - write:passenger
+        - read:passenger
+      - api_key: [ ]
+
 components:
   schemas:
-    RentalService:
+    user:
       type: object
       properties:
-        serviceId:
+        id:
           type: integer
-          format: int64
-          example: 78
+        first name:
+          type: string
+        last name:
+          type: string
+        birthday:
+          type: string
+          format: date
+        email:
+          type: string
+        role:
+          type: string
+      nullable: false
+    car:
+      type: object
+      properties:
+        id:
+          type: integer
         name:
           type: string
-          example: CarService
-        email:
-          type: string
-          example: carServicevibi@email.com
-        phone:
-          type: string
-          example: '+380976578761'
-        websiteLink:
-          type: string
-          example: https://www.carService.com
-        address:
-          type: array
-          items:
-            $ref: '#/components/schemas/Address'
-    Car:
-      required:
-        - status
-        - brand
-        - fuelСonsumption
-      type: object
-      properties:
-        carId:
-          type: integer
-          format: int64
-          example: 1
-        brand:
-          type: string
-          example: Wolksvagen
-        model:
-          type: string
-          example: Jetta
-        yearProduction:
-          type: integer
-          format: int64
-          example: 2019
-        seatsNumber:
-          type: integer
-          format: int64
-          example: 5
-        status:
-          type: string
-          description: Car Status
-          example: free
-          enum:
-            - free
-            - reserve
-        reservation:
-          type: array
-          items:
-            $ref: '#/components/schemas/Reservation'
-    Reservation:
-      required:
-        - reservId
-        - startTime
-        - endTime
-      type: object
-      properties:
-        reservId:
-          type: integer
-          format: int64
-          example: 54
-        startTime:
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-        endTime:
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-    Cars:
-      type: array
-      items:
-        $ref: '#/components/schemas/Car'
-    Address:
-      type: object
-      properties:
-        street:
-          type: string
-          example: "45 Histon"
-        city:
-          type: string
-          example: Hobard
-        state:
-          type: string
-          example: Tasmania
-      xml:
-        name: address
-    Passenger:
-      required:
-        - id
-        - documentNum
+        price:
+          type: number
+          format: float
+      nullable: false
+    booking:
       type: object
       properties:
         id:
           type: integer
-          format: int64
-          example: 10
-        firstName:
+        user id:
+          type: integer
+        car id:
+          type: integer
+        booking from:
+          type: integer
+          format: date
+        booking until:
+          type: integer
+          format: date
+      nullable: false
+    create_user:
+      type: object
+      properties:
+        first name:
           type: string
-          example: John
-        lastName:
+        last name:
           type: string
-          example: James
+        birthday:
+          type: string
+          format: date
         email:
           type: string
-          example: john@email.com
-        phone:
+        role:
           type: string
-          example: '0934985162'
-        documebtNum:
-          type: string
-          example: 'KA 1045'
-        address:
-          type: array
-          items:
-            $ref: '#/components/schemas/Address'
-    Administrator:
+      nullable: false
+    create_car:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        firstName:
+        name:
           type: string
-          example: Li
-        lastName:
-          type: string
-          example: Noa
-        phone:
-          type: string
-          example: '+380934985162'
-    Error:
-      required:
-        - code
-        - message
+        price:
+          type: number
+          format: float
+      nullable: false
+    create_booking:
       type: object
       properties:
-        code:
+        user id:
           type: integer
-        message:
-          type: string
-  requestBodies:
-    Car:
-      description: Car object that needs to be added to the service list
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Car'
-        application/xml:
-          schema:
-            $ref: '#/components/schemas/Car'
-    PassangersArray:
-      description: List of passanger object
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/Passenger'
+        car id:
+          type: integer
+        booking from:
+          type: integer
+          format: date
+        booking until:
+          type: integer
+          format: date
+      nullable: false
+
+
+  securitySchemes:
+    car_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://car.swagger.io/oauth/dialog
+          scopes:
+            write:passenger: modify user in your account
+            read:passenger: read your pets
+            write:administrator: modify user in your account
+            read:administrator: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

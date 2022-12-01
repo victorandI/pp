@@ -1,6 +1,7 @@
 import os
+from datetime import datetime
 
-from sqlalchemy import Integer, String, Column, Date, ForeignKey
+from sqlalchemy import Integer, String, Column, Date, ForeignKey, Float, DATE
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
@@ -17,36 +18,27 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
-class Administrator(Base):
-    __tablename__="Administrator"
+class User(Base):
+    __tablename__="user"
 
-    idAdministrator = Column(Integer, primary_key=True)
+    idUser = Column(Integer, primary_key=True)
+    Email = Column(String(250), nullable=False)
+    Password = Column(String(250), nullable=False)
     FirstName = Column(String(25), nullable=False)
     LastName = Column(String(225), nullable=False)
-    phone = Column(String(225), nullable=False)
+    Role = Column(String(225), nullable=False)
 
-class Passenger(Base):
-    __tablename__="Passenger"
+class Booking(Base):
+    __tablename__="booking"
 
-    idPassenger = Column(Integer, primary_key=True)
-    FirstName = Column(String(225))
-    LastName = Column(String(225))
-    phone = Column(String(225))
-    documentNum = Column(String(225))
-    address =  Column(String(225))
-
-class RentalService(Base):
-    __tablename__="RentalService"
-
-    idService = Column(Integer, primary_key=True)
-    name = Column(String(225))
-    email = Column(String(225))
-    phone = Column(String(225))
-    website = Column(String(225))
-    address =  Column(String(225))
+    Booking = Column(Integer, primary_key=True)
+    User = Column(Integer)
+    Car = Column(Integer)
+    bfrom = Column(DATE, nullable=False)
+    buntil = Column(DATE, nullable=False)
 
 class Car(Base):
-    __tablename__="Car"
+    __tablename__="car"
 
     idCar = Column(Integer, primary_key=True)
     brand = Column(String(225))
@@ -54,3 +46,4 @@ class Car(Base):
     year = Column(Integer)
     seatsNum = Column(Integer)
     status =  Column(String(225))
+    Price = Column(Float)
